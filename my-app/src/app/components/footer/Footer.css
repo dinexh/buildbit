@@ -1,0 +1,30 @@
+.footer-component {
+  /* background-color: black; */
+  color: white;
+  border-top: 1px solid grey;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+.footer-component-in {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  padding: 2rem;
+}
+.footer-component-in-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 30%;
+}
+
+.footer-component-in p {
+  font-size: 1rem;
+  color: white;
+}
+
+
+
