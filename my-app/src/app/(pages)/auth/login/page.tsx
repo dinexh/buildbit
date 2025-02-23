@@ -7,7 +7,6 @@ import { FaGoogle, FaGithub, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/
 import './page.css';
 import { useRouter } from 'next/navigation';
 
-
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const router = useRouter();
@@ -15,36 +14,60 @@ export default function AuthPage() {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
+    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+    const body = isLogin
+      ? { email: formData.email, password: formData.password }
+      : { name: formData.name, email: formData.email, password: formData.password };
+
+    if (!isLogin && formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+      // Store JWT (e.g., in localStorage or cookies)
+      localStorage.setItem('token', data.token);
+      router.push('/dashboard'); // Redirect to dashboard
+    } catch (err: any) {
+      setError(err.message);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
     <div className="auth-component">
       <div className="auth-component-left">
         <div className="logo">
-          <h1>BuildBit</h1>
+          <h1>BitBuild</h1>
           <button onClick={() => router.push('/')}>
-            <FaArrowLeft />
-            Back to Home
+            <FaArrowLeft /> Back to Home
           </button>
         </div>
-          <h2>Build better, bit by bit.</h2>
-          <p>Ties into the app’s core promise—perfect continuity from the landing page.</p>
+        <h2>Build better, bit by bit.</h2>
+        <p>An AI-powered companion for devs to ship faster.</p>
         <div className="demoImage">
           <Image src={Demo} alt="Dashboard Demo" width={600} height={400} />
         </div>
@@ -53,7 +76,7 @@ export default function AuthPage() {
         <div className="auth-component-right-in">
           <div className="formContainer">
             <h2>{isLogin ? 'Log in' : 'Sign up'}</h2>
-            
+            {error && <p className="error">{error}</p>}
             <form onSubmit={handleSubmit}>
               {!isLogin && (
                 <div className="inputGroup">
@@ -68,7 +91,6 @@ export default function AuthPage() {
                   />
                 </div>
               )}
-
               <div className="inputGroup">
                 <label htmlFor="email">Email address</label>
                 <input
@@ -80,7 +102,6 @@ export default function AuthPage() {
                   placeholder="Enter your email"
                 />
               </div>
-
               <div className="inputGroup">
                 <label htmlFor="password">Password</label>
                 <div className="passwordInput">
@@ -101,7 +122,6 @@ export default function AuthPage() {
                   </button>
                 </div>
               </div>
-
               {!isLogin && (
                 <div className="inputGroup">
                   <label htmlFor="confirmPassword">Confirm Password</label>
@@ -124,7 +144,6 @@ export default function AuthPage() {
                   </div>
                 </div>
               )}
-
               {isLogin && (
                 <div className="rememberMe">
                   <label onClick={() => router.push('/auth/forgotpassword')}>
@@ -132,16 +151,13 @@ export default function AuthPage() {
                   </label>
                 </div>
               )}
-
               <button type="submit" className="signInButton">
                 {isLogin ? 'Sign In' : 'Sign Up'}
               </button>
             </form>
-
             <div className="divider">
               <span>Or</span>
             </div>
-
             <div className="socialButtons">
               <button className="googleButton">
                 <FaGoogle /> Continue with Google
@@ -150,13 +166,9 @@ export default function AuthPage() {
                 <FaGithub /> Continue with GitHub
               </button>
             </div>
-
             <p className="signupPrompt">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <button 
-                className="switchAuthMode" 
-                onClick={() => setIsLogin(!isLogin)}
-              >
+              {isLogin ? "Don't have an account? " : "Already have one? "}
+              <button className="switchAuthMode" onClick={() => setIsLogin(!isLogin)}>
                 {isLogin ? 'Sign up' : 'Log in'}
               </button>
             </p>
