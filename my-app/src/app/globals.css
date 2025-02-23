@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary: #00F0FF;
-  --primary-dark: #00D1FF;
+  --primary: blue;
+  --primary-dark: blue;
   --text: #FFFFFF;
   --text-secondary: rgba(255, 255, 255, 0.7);
   --background: #0A0A0A;
@@ -52,7 +52,7 @@ body {
 
 .hero-description {
   font-size: 1.25rem;
-  color: var(--text-secondary);
+  color:lightblue;
   max-width: 800px;
   margin: 0 auto 3rem;
   text-align: center;
@@ -78,8 +78,8 @@ body {
 }
 
 .primary-button {
-  background: var(--primary);
-  color: var(--background);
+  background: blue;
+  color: white;
   border: none;
 }
 
