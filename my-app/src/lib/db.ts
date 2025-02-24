@@ -1,21 +1,25 @@
-import { createClient } from '@supabase/supabase-js'
+import { MongoClient } from 'mongodb'
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing environment variable NEXT_PUBLIC_SUPABASE_URL')
+if (!process.env.MONGODB_URI) {
+  throw new Error('Please add your MongoDB URI to .env.local')
 }
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  throw new Error('Missing environment variable NEXT_PUBLIC_SUPABASE_ANON_KEY')
-}
+const uri = process.env.MONGODB_URI
+const client = new MongoClient(uri)
 
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: true,
-    },
+// Database Name
+const dbName = 'buildbit'
+
+async function connectToDb() {
+  try {
+    await client.connect()
+    console.log('Connected successfully to MongoDB')
+    return client.db(dbName)
+  } catch (error) {
+    console.error('MongoDB connection error:', error)
+    throw error
   }
-)
+}
 
-export default supabase
+const db = await connectToDb()
+export default db

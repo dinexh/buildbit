@@ -1,16 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import Demo from '../../../assets/demokanban.png';
+import { useState, FormEvent } from 'react';
 import Image from 'next/image';
 import { FaGoogle, FaGithub, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
-import './page.css';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+import Demo from '../../../assets/demokanban.png';
+import './page.css';
+
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     password: '',
@@ -19,8 +27,9 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
@@ -31,30 +40,53 @@ export default function AuthPage() {
 
     if (!isLogin && formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
 
     try {
+      const loadingToast = toast.loading(isLogin ? 'Signing in...' : 'Creating account...');
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
+      const data: { token: string; error?: string } = await res.json();
+      toast.dismiss(loadingToast);
+
       if (!res.ok) throw new Error(data.error || 'Something went wrong');
 
+      toast.success(isLogin ? 'Successfully logged in!' : 'Account created successfully!');
       localStorage.setItem('token', data.token);
       router.push('/dashboard');
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Something went wrong';
       setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleGitHubLogin = () => {
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+    const redirectUri = `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/auth/github/callback`;
+  
+    console.log('Client ID:', clientId);
+    console.log('Redirect URI:', redirectUri);
+  
+    if (!clientId || !redirectUri) {
+      console.error('Missing GitHub Client ID or Redirect URI');
+      toast.error('Configuration error. Please try again later.');
+      return;
+    }
+  
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=repo`;
+    window.location.href = githubAuthUrl;
   };
 
   return (
@@ -151,7 +183,7 @@ export default function AuthPage() {
                   </label>
                 </div>
               )}
-              <button type="submit" className="signInButton">
+              <button type="submit" className="signInButton" disabled={loading}>
                 {isLogin ? 'Sign In' : 'Sign Up'}
               </button>
             </form>
@@ -162,12 +194,12 @@ export default function AuthPage() {
               <button className="googleButton">
                 <FaGoogle /> Continue with Google
               </button>
-              <button className="githubButton">
+              <button className="githubButton" onClick={handleGitHubLogin}>
                 <FaGithub /> Continue with GitHub
               </button>
             </div>
             <p className="signupPrompt">
-              {isLogin ? "Don't have an account? " : "Already have one? "}
+              {isLogin ? "Don't have an account? " : 'Already have one? '}
               <button className="switchAuthMode" onClick={() => setIsLogin(!isLogin)}>
                 {isLogin ? 'Sign up' : 'Log in'}
               </button>
