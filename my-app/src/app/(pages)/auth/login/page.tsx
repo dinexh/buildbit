@@ -20,7 +20,7 @@ export default function AuthPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
@@ -44,11 +44,11 @@ export default function AuthPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Something went wrong');
 
-      // Store JWT (e.g., in localStorage or cookies)
       localStorage.setItem('token', data.token);
-      router.push('/dashboard'); // Redirect to dashboard
-    } catch (err: any) {
-      setError(err.message);
+      router.push('/dashboard');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong';
+      setError(errorMessage);
     }
   };
 

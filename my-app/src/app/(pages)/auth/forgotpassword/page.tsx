@@ -1,14 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import './page.css';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +30,8 @@ export default function ForgotPassword() {
       } else {
         setMessage(data.error || 'An error occurred. Please try again.');
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Password reset error:', error);
       setMessage('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
