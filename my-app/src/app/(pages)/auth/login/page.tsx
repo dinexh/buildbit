@@ -2,11 +2,12 @@
 
 import { useState, FormEvent } from 'react';
 import Image from 'next/image';
-import { FaGoogle, FaGithub, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
+import { FaGoogle, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import Demo from '../../../assets/demokanban.png';
 import './page.css';
+import { supabase } from '@/lib/superbaseClient';
 
 interface FormData {
   name: string;
@@ -32,61 +33,54 @@ export default function AuthPage() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
-    const body = isLogin
-      ? { email: formData.email, password: formData.password }
-      : { name: formData.name, email: formData.email, password: formData.password };
+    setLoading(true);
 
     if (!isLogin && formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       toast.error('Passwords do not match');
+      setLoading(false);
       return;
     }
 
     try {
-      const loadingToast = toast.loading(isLogin ? 'Signing in...' : 'Creating account...');
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      if (isLogin) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
 
-      const data: { token: string; error?: string } = await res.json();
-      toast.dismiss(loadingToast);
+        if (error) throw error;
 
-      if (!res.ok) throw new Error(data.error || 'Something went wrong');
+        toast.success('Successfully logged in!');
+        router.push('/dashboard');
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              name: formData.name,
+            },
+            emailRedirectTo: `${window.location.origin}/auth/login`,
+          },
+        });
 
-      toast.success(isLogin ? 'Successfully logged in!' : 'Account created successfully!');
-      localStorage.setItem('token', data.token);
-      router.push('/dashboard');
+        if (error) throw error;
+
+        toast.success('Account created successfully! Please check your email for confirmation.');
+      }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Something went wrong';
       setError(errorMessage);
       toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleGitHubLogin = () => {
-    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
-    const redirectUri = `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/auth/github/callback`;
-  
-    console.log('Client ID:', clientId);
-    console.log('Redirect URI:', redirectUri);
-  
-    if (!clientId || !redirectUri) {
-      console.error('Missing GitHub Client ID or Redirect URI');
-      toast.error('Configuration error. Please try again later.');
-      return;
-    }
-  
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=repo`;
-    window.location.href = githubAuthUrl;
   };
 
   return (
@@ -184,7 +178,7 @@ export default function AuthPage() {
                 </div>
               )}
               <button type="submit" className="signInButton" disabled={loading}>
-                {isLogin ? 'Sign In' : 'Sign Up'}
+                {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
               </button>
             </form>
             <div className="divider">
@@ -193,9 +187,6 @@ export default function AuthPage() {
             <div className="socialButtons">
               <button className="googleButton">
                 <FaGoogle /> Continue with Google
-              </button>
-              <button className="githubButton" onClick={handleGitHubLogin}>
-                <FaGithub /> Continue with GitHub
               </button>
             </div>
             <p className="signupPrompt">

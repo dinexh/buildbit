@@ -1,27 +1,29 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import jwt from 'jsonwebtoken';
-
+"use client";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/superbaseClient";
+import { User } from "@supabase/supabase-js";
 export default function Dashboard() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const token = searchParams.get('token') || localStorage.getItem('token');
-    if (!token) {
-      router.push('/auth/login');
-      return;
-    }
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string; githubId: number };
-      localStorage.setItem('token', token);
-      // Fetch user data or proceed
-    } catch (err) {
-      router.push('/auth/login');
-    }
-  }, [router, searchParams]);
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = "/auth/login";
+      } else {
+        setUser(user);
+      }
+    };
 
-  return <div>Welcome to the Dashboard!</div>;
+    getUser();
+  }, []);
+
+  return user ? (
+    <div>
+      <h1>Welcome, {user.email}</h1>
+      <button onClick={() => supabase.auth.signOut().then(() => window.location.href = "/auth/login")}>Logout</button>
+    </div>
+  ) : (
+    <p>Loading...</p>
+  );
 }
