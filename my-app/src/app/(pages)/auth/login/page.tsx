@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import Image from 'next/image';
-import { FaGoogle, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import Demo from '../../../assets/demokanban.png';
@@ -44,7 +44,7 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
@@ -54,7 +54,7 @@ export default function AuthPage() {
         toast.success('Successfully logged in!');
         router.push('/dashboard');
       } else {
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
