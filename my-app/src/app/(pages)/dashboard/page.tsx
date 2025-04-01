@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/superbaseClient";
 import { User } from "@supabase/supabase-js";
+import Header from "@/app/components/dashboard/Header";
+import "./dashboard.css";
+
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
 
@@ -19,11 +22,17 @@ export default function Dashboard() {
   }, []);
 
   return user ? (
-    <div>
-      <h1>Welcome, {user.email}</h1>
-      <button onClick={() => supabase.auth.signOut().then(() => window.location.href = "/auth/login")}>Logout</button>
+    <div className="dashboard-container">
+      <Header 
+        user={{ 
+          name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+          email: user.email || '',
+          image: user.user_metadata?.avatar_url
+        }} 
+      />
+      <main className="dashboard-main">
+        {/* Dashboard content will go here */}
+      </main>
     </div>
-  ) : (
-    <p>Loading...</p>
-  );
+  ) : null;
 }
