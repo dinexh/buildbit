@@ -54,3 +54,10 @@
   font-weight: 500;
   transition: all 0.3s ease;
 }
+.nav-component-in-links-button{
+  background-color: blue;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}

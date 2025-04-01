@@ -11,8 +11,7 @@ const Nav = () => {
       <div className="nav-component-in-links">
         <Link href="#features">Features</Link>
         <Link href="#about">About</Link>
-        <Link href="#blog">Blog</Link>
-        <button>Join the waitlist</button>
+        <Link className='nav-component-in-links-button' href="/auth/login">Get Started</Link>
       </div>
     </div>
   </nav>
