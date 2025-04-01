@@ -106,8 +106,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
 
       setSuccess('Profile updated successfully!');
       setIsEditing(false);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: Error | unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -125,8 +125,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
       const { error } = await supabase.auth.admin.deleteUser(user.email);
       if (error) throw error;
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: Error | unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -174,7 +174,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, user }) 
               <div className="profile-image-section">
                 <div className="profile-image-container">
                   {imagePreview ? (
-                    <img src={imagePreview} alt="Profile" className="profile-image" />
+                    <Image src={imagePreview} alt="Profile" width={100} height={100} className="profile-image" />
                   ) : (
                     <div className="profile-image-placeholder">
                       {user.name.charAt(0).toUpperCase()}

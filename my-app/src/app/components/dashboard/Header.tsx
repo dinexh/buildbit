@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/superbaseClient';
@@ -48,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                 >
                   <div className="profile-image">
                     {user.image ? (
-                      <img src={user.image} alt={user.name} />
+                      <Image src={user.image} alt={user.name} width={32} height={32} />
                     ) : (
                       <div className="profile-placeholder">
                         {user.name.charAt(0).toUpperCase()}
@@ -69,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                       <div className="dropdown-header">
                         <div className="profile-image">
                           {user.image ? (
-                            <img src={user.image} alt={user.name} />
+                            <Image src={user.image} alt={user.name} width={48} height={48} />
                           ) : (
                             <div className="profile-placeholder">
                               {user.name.charAt(0).toUpperCase()}
