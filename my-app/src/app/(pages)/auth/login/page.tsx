@@ -184,11 +184,6 @@ export default function AuthPage() {
             <div className="divider">
               <span>Or</span>
             </div>
-            <div className="socialButtons">
-              <button className="googleButton">
-                <FaGoogle /> Continue with Google
-              </button>
-            </div>
             <p className="signupPrompt">
               {isLogin ? "Don't have an account? " : 'Already have one? '}
               <button className="switchAuthMode" onClick={() => setIsLogin(!isLogin)}>
